@@ -2,28 +2,54 @@ require("dotenv").config();
 var keys = require("./keys.js");
 var axios = require('axios');
 var fs = require("fs");
+var moment = require('moment');
+moment().format();
+
 var command = process.argv[2];
 var input = process.argv.slice(3);
 
 var Spotify = require('node-spotify-api');
 var spotify = new Spotify(keys.spotify);
 
+var divider = "\n------------------------------------------------------------\n\n";
+
 function searchSpotify() {
     var song = input.join(" ");
-    spotify.search({ type: 'track', query: song, limit: 2 }, function (err, data) {
+    spotify.search({ type: 'track', query: song, limit: 5 }, function (err, data) {
         if (err) {
             return console.log('Error occurred: ' + err);
         }
+        var songs = data.tracks.items;
 
-        //   console.log(data.tracks.items[0]); 
-        //   Artist(s) --how to get multiple?
-        console.log(`Artist(s): ${data.tracks.items[0].artists[0].name}`);
-        //   The song's name
-        console.log(`Song Title: ${data.tracks.items[0].name}`)
-        //   A preview link of the song from Spotify
-        console.log(`Preview Song on Spotify: ${data.tracks.items[0].preview_url}`)
-        //   The album that the song is from
-        console.log(`Featured on the Album: ${data.tracks.items[0].album.name}`)
+        for (var i = 0; i < songs.length; i++) {
+            var currentSong = songs[i];
+            // var artistsArray = [];
+            var artists = [];
+
+            for (var j = 0; j < currentSong.artists.length; j++) {
+                artists.push(currentSong.artists[j].name);
+            };
+
+
+            var showData = [
+                `Artist(s): ${artists.join(", ")}`,
+                //   The song's name
+                `Song Title: ${songs[i].name}`,
+                //   A preview link of the song from Spotify
+                `Preview Song on Spotify: ${songs[i].preview_url}`,
+                //   The album that the song is from
+                `Featured on the Album: ${songs[i].album.name}`,
+                divider
+
+            ].join("\n\n");
+
+            console.log(showData);
+
+            fs.appendFile("log.txt", showData + divider, function (err) {
+                if (err) throw err;
+            });
+
+        };
 
     });
 }
@@ -31,26 +57,93 @@ function searchSpotify() {
 
 function searchOmdb() {
     var movie = input.join("+");
-    axios.get("http://www.omdbapi.com/?t=" + input + "&y=&plot=short&apikey=trilogy").then(
+    axios.get("http://www.omdbapi.com/?t=" + movie + "&y=&plot=short&apikey=trilogy").then(
         function (response) {
             //   console.log(response.data);
-            //   * Title of the movie.
-            console.log(`Title: ${response.data.Title}`);
-            //   * Year the movie came out.
-            console.log(`Year Released: ${response.data.Year}`);
-            //   * IMDB Rating of the movie.
-            console.log(`IMDB Rating: ${response.data.imdbRating}`);
-            //   * Rotten Tomatoes Rating of the movie.
+            var showData = [
+                `Title: ${response.data.Title}`,
+                //   * Year the movie came out.
+                `Year Released: ${response.data.Year}`,
+                //   * IMDB Rating of the movie.
+                `IMDB Rating: ${response.data.imdbRating}`,
+                //   * Rotten Tomatoes Rating of the movie.
 
-            console.log(` Rotten Tomatoes Rating: ${response.data.Ratings[1].Value}`);
-            //   * Country where the movie was produced.
-            console.log(`Produced in: ${response.data.Country}`);
-            //   * Language of the movie.
-            console.log(`Language: ${response.data.Language}`);
-            //   * Plot of the movie.
-            console.log(`Plot: ${response.data.Plot}`);
-            //   * Actors in the movie.
-            console.log(`Actors: ${response.data.Actors}`);
+                ` Rotten Tomatoes Rating: ${response.data.Ratings[1].Value}`,
+                //   * Country where the movie was produced.
+                `Produced in: ${response.data.Country}`,
+                //   * Language of the movie.
+                `Language: ${response.data.Language}`,
+                //   * Plot of the movie.
+                `Plot: ${response.data.Plot}`,
+                //   * Actors in the movie.
+                `Actors: ${response.data.Actors}`,
+                divider
+
+            ].join("\n\n");
+
+            fs.appendFile("log.txt", showData, function (err) {
+                if (err) throw err;
+                console.log(showData);
+            });
+
+        })
+        .catch(function (error) {
+            if (error.response) {
+                // The request was made and the server responded with a status code
+                // that falls out of the range of 2xx
+                console.log("---------------Data---------------");
+                console.log(error.response.data);
+                console.log("---------------Status---------------");
+                console.log(error.response.status);
+                console.log("---------------Status---------------");
+                console.log(error.response.headers);
+            } else if (error.request) {
+                // The request was made but no response was received
+                // `error.request` is an object that comes back with details pertaining to the error that occurred.
+                console.log(error.request);
+            } else {
+                // Something happened in setting up the request that triggered an Error
+                console.log("Error", error.message);
+            }
+            console.log(error.config);
+        });
+}
+
+function concertThis() {
+    var artist = input.join("%20");
+    var artistTitle = `${input.join(" ").toUpperCase()}'S UPCOMING CONCERTS:\n\n`;
+    fs.appendFile("log.txt",  artistTitle, function (err) {
+        if (err) throw err;
+        console.log(artistTitle);
+    });
+    axios.get("https://rest.bandsintown.com/artists/" + artist + "/events?app_id=codingbootcamp").then(
+        function (response) {
+            response.data.forEach(function (concert) {
+                var originalDate = moment(concert.datetime, "YYYY-MM-DDTHH:mm:ss");
+                var dateReformatted = originalDate.format("MM/DD/YY");
+                var city = "";
+
+                if (!concert.venue.region) {
+                    city = `City: ${concert.venue.city}, ${concert.venue.country}`;
+                } else {
+                    city = `City: ${concert.venue.city}, ${concert.venue.region}, ${concert.venue.country}`;
+                };
+
+                var showData = [
+                    // Name of the venue
+                    `Venue: ${concert.venue.name}`,
+                    // Venue location
+                    city,
+                    // Date of the Event (use moment to format this as "MM/DD/YYYY")
+                    `Date: ${dateReformatted}`, 
+                    divider
+                ].join("\n\n");
+
+                fs.appendFile("log.txt",  showData, function (err) {
+                    if (err) throw err;
+                    console.log( showData);
+                });
+            });
 
         })
         .catch(function (error) {
@@ -87,17 +180,14 @@ function doWhatItSays() {
         var dataArray = data.split(",");
         command = dataArray[0];
         input = dataArray[1].split(" ");
-        console.log(command);
-        console.log(input);
         runCommands();
     });
-
 }
 
 function runCommands() {
     switch (command) {
         case "concert-this":
-            break;
+            return concertThis();
         case "spotify-this-song":
             return searchSpotify();
         case "movie-this":
