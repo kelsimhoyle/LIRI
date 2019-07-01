@@ -45,7 +45,7 @@ function searchSpotify() {
 
             console.log(showData);
 
-            fs.appendFile("log.txt", showData + divider, function (err) {
+            fs.appendFile("log.txt", showData, function (err) {
                 if (err) throw err;
             });
 
