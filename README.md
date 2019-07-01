@@ -24,9 +24,21 @@ When the user enters `node liri.js spotify-this-song (song name)`, Liri uses the
 
 <img src="images/movie-this.gif">
 
-When the user enters `node liri.js spotify-this-song (movie title)`, Liri uses movie title to search on the OMDB API. Information about the movie, including the title, year produced, location, actors, ratings, and plot are returned. This information is also appended to the log.txt file.
+When the user enters `node liri.js movie-this (movie title)`, Liri uses movie title to search on the OMDB API. Information about the movie, including the title, year produced, location, actors, ratings, and plot are returned. This information is also appended to the log.txt file.
 
 <img src="images/movie-log.png">
 
+## do-what-it-says
 
+<img src="images/do-what-it-says.gif">
 
+When the user enters `node liri.js do-what-it-says`, Liri reads a text file and executes what is contained in there. Currently, the random.txt file contains:
+> spotify-this-song,"I Want it That Way"
+
+This text file can be changed to different commands and inputs and Liri will execute it accordingly.
+
+### Technologies
+
+Node.js, JavaScript, OMDB API, Bands In Town API, Spotify API, Axios Node Module, and Moment Node Module.
+
+#### Created by Kelsi Hoyle

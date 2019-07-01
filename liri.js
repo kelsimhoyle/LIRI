@@ -14,7 +14,14 @@ var spotify = new Spotify(keys.spotify);
 var divider = "\n------------------------------------------------------------\n\n";
 
 function searchSpotify() {
-    var song = input.join(" ");
+    var song = "";
+
+    if (!input) {
+        song = "Here Comes the Sun"
+    } else {
+        song = input.join(" ");
+    }
+
     spotify.search({ type: 'track', query: song, limit: 5 }, function (err, data) {
         if (err) {
             return console.log('Error occurred: ' + err);
@@ -56,7 +63,15 @@ function searchSpotify() {
 
 
 function searchOmdb() {
-    var movie = input.join("+");
+
+    var movie = "";
+
+    if (!input) {
+        movie = "Finding+Nemo";
+    } else {
+        movie = input.join("+");
+    }
+
     axios.get("http://www.omdbapi.com/?t=" + movie + "&y=&plot=short&apikey=trilogy").then(
         function (response) {
             //   console.log(response.data);
@@ -110,12 +125,23 @@ function searchOmdb() {
 }
 
 function concertThis() {
-    var artist = input.join("%20");
-    var artistTitle = `${input.join(" ").toUpperCase()}'S UPCOMING CONCERTS:\n\n`;
-    fs.appendFile("log.txt",  artistTitle, function (err) {
+
+    var artist = "";
+    var artistTitle = "";
+
+    if (!input) {
+        artist = "Ed%20Sheeran";
+        artistTitle = `ED SHEERAN'S UPCOMING CONCERTS:\n\n`;
+    } else {
+        artist = input.join("%20");
+        artistTitle = `${input.join(" ").toUpperCase()}'S UPCOMING CONCERTS:\n\n`;
+    }
+
+    fs.appendFile("log.txt", artistTitle, function (err) {
         if (err) throw err;
         console.log(artistTitle);
     });
+
     axios.get("https://rest.bandsintown.com/artists/" + artist + "/events?app_id=codingbootcamp").then(
         function (response) {
             response.data.forEach(function (concert) {
@@ -135,13 +161,13 @@ function concertThis() {
                     // Venue location
                     city,
                     // Date of the Event (use moment to format this as "MM/DD/YYYY")
-                    `Date: ${dateReformatted}`, 
+                    `Date: ${dateReformatted}`,
                     divider
                 ].join("\n\n");
 
-                fs.appendFile("log.txt",  showData, function (err) {
+                fs.appendFile("log.txt", showData, function (err) {
                     if (err) throw err;
-                    console.log( showData);
+                    console.log(showData);
                 });
             });
 
